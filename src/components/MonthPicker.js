@@ -7,8 +7,7 @@ class MonthPicker extends React.Component{
     super(props)
     this.state = {
       isOpen : false,
-      selectedYear: this.props.year,
-      selectedMonth: this.props.month
+      selectedYear: this.props.year
     }
   }
   toggleDropdown = (event) => {
@@ -29,7 +28,7 @@ class MonthPicker extends React.Component{
       selectedMonth: MonthNumber,
       isOpen: false
     })
-    this.props.onChange( this.state.selectedYear, this.state.selectedMonth )
+    this.props.onChange( this.state.selectedYear, MonthNumber )
   }
   render() {
     const { year, month } = this.props
@@ -40,7 +39,7 @@ class MonthPicker extends React.Component{
     const { selectedYear } = this.state
     const { selectedMonth } = this.state
     return (
-      <div className="dropdown month=picker-component">
+      <div className="dropdown month-picker-component">
         <h4>选择月份</h4>
         <button
           className="btn btn-lg btn-secondary dropdown-toggle"

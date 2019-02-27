@@ -5,7 +5,7 @@ import '../App.css';
 import PriceList from '../components/PriceList'
 import ViewTab from '../components/ViewTab'
 import TotalPrice from '../components/TotalPrice'
-import { LIST_VIEW, CHART_VIEW, TYPE_INCOME, TYPE_OUTCOME, parseToYearAndMonth } from "../utility";
+import { LIST_VIEW, CHART_VIEW, TYPE_INCOME, TYPE_OUTCOME, parseToYearAndMonth, padLeft } from "../utility";
 import MonthPicker from '../components/MonthPicker'
 import CreateBtn from '../components/CreateBtn'
 
@@ -20,7 +20,7 @@ const categories = {
     'id': '2',
     'name': '理财',
     'type': 'income',
-    'iconName': 'ios-plane'
+    'iconName': 'logo-yen'
   }
 }
 
@@ -29,7 +29,7 @@ const items = [
     'id': 1,
     'title': '去广州旅游',
     'price': 200,
-    'date': '2019-02-03',
+    'date': '2019-01-03',
     'cid': 1
   },
   {
@@ -43,30 +43,71 @@ const items = [
     'id': 3,
     'title': '理财',
     'price': 200,
-    'date': '2019-02-03',
+    'date': '2019-03-03',
     'cid': 2
   }
 ]
-
+const newItem = {
+  'id': 4,
+  'title': '添加新项目',
+  'price': 300,
+  'date': '2018-10-10',
+  'cid': 1
+}
 class Home extends React.Component{
   constructor(props) {
     super(props)
     this.state = {
       items,
-      currentDate: parseToYearAndMonth,
+      currentDate: parseToYearAndMonth(),
       tabView: LIST_VIEW
-
     }
   }
+  changeView = (view) => {
+    this.setState({
+      tabView: view,
+    })
+  }
+  changeDate = (year, month) => {
+    this.setState({
+      currentDate: { year, month }
+    })
+  }
+  modifyItem = (modifiedItem) => {
+    const modifiedItems = this.state.items.map(item => {
+      if ( item.id === modifiedItem.id ) {
+        return { ...item, title: '更新后的标题'}
+      } else {
+        return item
+      }
+    })
+    this.setState({
+      items: modifiedItems
+    })
+  }
+  createItem = () => {
+    this.setState({
+      items: [newItem, ...this.state.items]
+    })
+  }
+  deleteItem = (deleteItem) => {
+    const filteredItems = this.state.items.filter(item => item.id !== deleteItem.id)
+    this.setState({
+      items: filteredItems
+    })
+  }
+
   render() {
-    const { items, currentDate, tabVIew } = this.state
-    const itemWithCategory = items.map(item => {
+    const { items, currentDate, tabView } = this.state
+    const itemsWithCategory = items.map(item => {
       item.category = categories[item.cid]
       // 类似于数据库的外键
       return item
+    }).filter(item => {
+      return item.date.includes(`${currentDate.year}-${padLeft(currentDate.month)}`)
     })
     let totalIncome = 0, totalOutcome = 0
-    itemWithCategory.forEach(item => {
+    itemsWithCategory.forEach(item => {
       if (item.category.type === TYPE_OUTCOME) {
         totalOutcome += item.price
       }else {
@@ -82,9 +123,9 @@ class Home extends React.Component{
           <div className="row">
             <div className="col">
               <MonthPicker
-                year={2019}
-                month={1}
-                onChange={() => {}}
+                year={currentDate.year}
+                month={currentDate.month}
+                onChange={ this.changeDate }
               />
             </div>
             <div className="col">
@@ -96,19 +137,25 @@ class Home extends React.Component{
         </header>
         <div className="content-area py-3 px-3">
           <ViewTab
-            activeTab={LIST_VIEW}
-            onTabChange={() => {}}
+            activeTab={tabView}
+            onTabChange={ this.changeView }
           />
-          <CreateBtn onClick={() => {}}/>
-          <PriceList
-            items={items}
-            onModifyItem={() => {}}
-            onDeleteItem={() => {}}
-          />
+          <CreateBtn onClick={ this.createItem }/>
+          { tabView === LIST_VIEW &&
+            <PriceList
+              items={ itemsWithCategory }
+              onModifyItem={ this.modifyItem }
+              onDeleteItem={ this.deleteItem }
+            />
+          }
+          {
+            tabView === CHART_VIEW &&
+            <h1>这里是图表</h1>
+          }
         </div>
       </React.Fragment>
     )
   }
 }
-
+export { items, categories }
 export default Home
